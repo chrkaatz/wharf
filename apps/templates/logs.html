@@ -1,20 +1,41 @@
 {% extends "app_info_base.html" %}
 {% block tab %}
     {{ tabs("logs") }}
-    <h2>Task logs</h2>
-    {% if task_logs %}
-        <ul>
-            {% for tl in task_logs %}
-                <li>
-                    <a href="{{ url('show_log', task_id=tl.task_id) }}">{{ tl.nice_when() }} - {{ tl.description }}</a>
-                </li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        No tasks run yet
-    {% endif %}
-    <h3>Logs</h3>
-    <pre>
-{{ logs }}
-    </pre>
+    <div class="card">
+        <div class="card-header">
+            <i class="bi bi-clock-history"></i> Task History
+        </div>
+        <div class="card-body">
+            {% if task_logs %}
+                <div class="list-group">
+                    {% for tl in task_logs %}
+                        <a href="{{ url('show_log', task_id=tl.task_id) }}" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ tl.description }}</h6>
+                                <small>{{ tl.nice_when() }}</small>
+                            </div>
+                        </a>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <i class="bi bi-inbox"></i>
+                    <p class="mb-0">No tasks run yet.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <i class="bi bi-terminal"></i> Application Logs
+        </div>
+        <div class="card-body">
+            {% if logs %}
+                <pre>{{ logs }}</pre>
+            {% else %}
+                <p class="text-muted mb-0">No logs available.</p>
+            {% endif %}
+        </div>
+    </div>
 {% endblock tab %}

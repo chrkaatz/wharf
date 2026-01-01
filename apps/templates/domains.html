@@ -1,47 +1,104 @@
 {% extends "app_info_base.html" %}
 {% block tab %}
     {{ tabs("domains") }}
-    <h2>Domains</h2>
-    {% if domains.length == 0 %}
-        None
-    {% else %}
-        <ul>
-            {% for d in domains %}
-                <li>
-                    <a href="{{ 'https' if letsencrypt else 'http' }}://{{ d }}">{{ d }}</a>
-                    <form class="d-inline"
-                          action="{{ url('remove_domain', app_name=app) }}"
-                          method="post">
-                        {% csrf_token %}
-                        <input type="hidden" name="name" value="{{ d }}" />
-                        <button type="submit" class="btn btn-primary">Delete '{{ d }}' domain</button>
-                    </form>
-                </li>
-            {% endfor %}
-        </ul>
-    {% endif %}
-    <h3>New domain</h3>
-    <form action="{{ url('add_domain', app_name=app) }}" method="post">
-        {% csrf_token %}
-        {{ domain_form | bootstrap }}
-        <input class="form-control" type="submit" value="Submit" />
-    </form>
-    <h3>Let's Encrypt</h3>
-    {% if letsencrypt %}
-        <ul>
-            {% for (k,v) in letsencrypt.items() if k != 'App name' %}<li>{{ k }}: {{ v }}</li>{% endfor %}
-        </ul>
-        <form class="form-inline"
-              action="{{ url('remove_letsencrypt', app_name=app) }}"
-              method="post">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-primary">Remove Letsencrypt</button>
-        </form>
-    {% else %}
-        <form action="{{ url('setup_letsencrypt', app_name=app) }}" method="post">
-            {% csrf_token %}
-            {{ letsencrypt_form | bootstrap }}
-            <button type="submit" class="btn btn-primary">Setup Let's Encrypt</button>
-        </form>
-    {% endif %}
+    <div class="card">
+        <div class="card-header">
+            <i class="bi bi-globe"></i> Domains
+        </div>
+        <div class="card-body">
+            {% if domains and domains|length > 0 %}
+                {% for d in domains %}
+                    <div class="config-item">
+                        <div>
+                            <a href="{{ 'https' if letsencrypt else 'http' }}://{{ d }}" target="_blank" class="text-decoration-none">
+                                <i class="bi bi-link-45deg"></i> {{ d }}
+                            </a>
+                        </div>
+                        <form class="d-inline"
+                              action="{{ url('remove_domain', app_name=app) }}"
+                              method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="name" value="{{ d }}" />
+                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                <i class="bi bi-trash"></i> Remove
+                            </button>
+                        </form>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <i class="bi bi-inbox"></i>
+                    <p class="mb-0">No domains configured.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <i class="bi bi-plus-circle"></i> Add Domain
+        </div>
+        <div class="card-body">
+            <form action="{{ url('add_domain', app_name=app) }}" method="post">
+                {% csrf_token %}
+                <div class="row g-3">
+                    <div class="col-md-10">
+                        <label for="{{ domain_form.name.id_for_label }}" class="form-label">Domain Name</label>
+                        {{ domain_form.name }}
+                        {% if domain_form.name.errors %}
+                            <div class="text-danger small mt-1">{{ domain_form.name.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-check-lg"></i> Add
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <i class="bi bi-shield-lock"></i> Let's Encrypt SSL
+        </div>
+        <div class="card-body">
+            {% if letsencrypt %}
+                <div class="mb-3">
+                    {% for (k,v) in letsencrypt.items() if k != 'App name' %}
+                        <div class="config-item">
+                            <span class="config-key">{{ k }}</span>
+                            <span class="config-value">{{ v }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+                <form action="{{ url('remove_letsencrypt', app_name=app) }}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-danger">
+                        <i class="bi bi-x-circle"></i> Remove Let's Encrypt
+                    </button>
+                </form>
+            {% else %}
+                <form action="{{ url('setup_letsencrypt', app_name=app) }}" method="post">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-10">
+                            <label for="{{ letsencrypt_form.email.id_for_label }}" class="form-label">Email Address</label>
+                            {{ letsencrypt_form.email }}
+                            {% if letsencrypt_form.email.errors %}
+                                <div class="text-danger small mt-1">{{ letsencrypt_form.email.errors }}</div>
+                            {% endif %}
+                            <div class="form-text">Required for Let's Encrypt certificate generation</div>
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-shield-check"></i> Setup
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            {% endif %}
+        </div>
+    </div>
 {% endblock tab %}

@@ -1,41 +1,111 @@
 {% extends "base.html" %}
 {% block body %}
-    <h1 id="list_apps">Wharf</h1>
-    <form class="form" action="{{ url("refresh_all") }}" method="post">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-primary" id="refresh_info">Refresh Dokku information</button>
-    </form>
-    <h3>Apps</h3>
-    <ul class="apps">
-        {% for app in apps %}
-            <h2>
-                <li>
-                    <a href="{{ url('app_info', app_name=app) }}">{{ app }}</a>
-                </li>
-            </h2>
-        {% else %}
-            <li>
-                <em>Unbelievable.  No apps here so far</em>
-            </li>
-        {% endfor %}
-    </ul>
-    <h3>New app</h3>
-    <form class="form" action="{{ url("index") }}" method="post">
-        {% csrf_token %}
-        <input type="hidden" name="kind" value="app" />
-        {{ app_form | bootstrap }}
-        <button type="submit" class="btn btn-primary" id="create_app">Create app</button>
-    </form>
-    <br />
-    <h2>Global Config</h2>
-    <ul class="config">
-        {% for (k,v) in config %}<li>{{ k }} = {{ v }}</li>{% endfor %}
-    </ul>
-    <h3>New item</h3>
-    <form action="{{ url("global_config_set") }}" method="post">
-        {% csrf_token %}
-        <input type="hidden" name="kind" value="config" />
-        {{ config_form | bootstrap }}
-        <input class="form-control" type="submit" value="Submit" />
-    </form>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="section-title mb-0">Apps</h1>
+        <form action="{{ url("refresh_all") }}" method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline-primary" id="refresh_info">
+                <i class="bi bi-arrow-clockwise"></i> Refresh
+            </button>
+        </form>
+    </div>
+
+    {% if apps %}
+        <div class="row g-3 mb-4">
+            {% for app in apps %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="card app-card h-100">
+                        <div class="card-body">
+                            <a href="{{ url('app_info', app_name=app) }}">
+                                <h5 class="app-card-title">
+                                    <i class="bi bi-app"></i> {{ app }}
+                                </h5>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="card">
+            <div class="card-body">
+                <div class="empty-state">
+                    <i class="bi bi-inbox"></i>
+                    <p class="mb-0">No apps yet. Create your first app below.</p>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <div class="card">
+        <div class="card-header">
+            <i class="bi bi-plus-circle"></i> Create New App
+        </div>
+        <div class="card-body">
+            <form action="{{ url("index") }}" method="post">
+                {% csrf_token %}
+                <input type="hidden" name="kind" value="app" />
+                <div class="mb-3">
+                    <label for="{{ app_form.app_name.id_for_label }}" class="form-label">App Name</label>
+                    {{ app_form.app_name }}
+                    {% if app_form.app_name.errors %}
+                        <div class="text-danger small mt-1">{{ app_form.app_name.errors }}</div>
+                    {% endif %}
+                </div>
+                <button type="submit" class="btn btn-primary" id="create_app">
+                    <i class="bi bi-plus-lg"></i> Create App
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="card mt-4">
+        <div class="card-header">
+            <i class="bi bi-gear"></i> Global Configuration
+        </div>
+        <div class="card-body">
+            {% if config %}
+                <div class="mb-3">
+                    {% for (k,v) in config %}
+                        <div class="config-item">
+                            <div>
+                                <span class="config-key">{{ k }}</span>
+                                <span class="config-value">= {{ v }}</span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-muted mb-3">No global configuration variables set.</p>
+            {% endif %}
+            <div class="form-section">
+                <h5 class="mb-3">Add Configuration Variable</h5>
+                <form action="{{ url("global_config_set") }}" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="kind" value="config" />
+                    <div class="row g-3">
+                        <div class="col-md-5">
+                            <label for="{{ config_form.key.id_for_label }}" class="form-label">Key</label>
+                            {{ config_form.key }}
+                            {% if config_form.key.errors %}
+                                <div class="text-danger small mt-1">{{ config_form.key.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-5">
+                            <label for="{{ config_form.value.id_for_label }}" class="form-label">Value</label>
+                            {{ config_form.value }}
+                            {% if config_form.value.errors %}
+                                <div class="text-danger small mt-1">{{ config_form.value.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-check-lg"></i> Add
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 {% endblock body %}

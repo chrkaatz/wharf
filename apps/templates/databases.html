@@ -1,38 +1,72 @@
 {% extends "app_info_base.html" %}
 {% block tab %}
     {{ tabs("databases") }}
-    <h3>Postgres</h3>
-    {% if postgres %}
-        Status: {{ postgres['Status'] }}
-        <form class="form-inline"
-              action="{{ url('remove_postgres', app_name=app) }}"
-              method="post">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-primary">Remove Postgres db</button>
-        </form>
-    {% else %}
-        <form class="form-inline"
-              action="{{ url('create_postgres', app_name=app) }}"
-              method="post">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-primary">Create Postgres db</button>
-        </form>
-    {% endif %}
-    <h3>Redis</h3>
-    {% if redis %}
-        Status: {{ redis['Status'] }}
-        <form class="form-inline"
-              action="{{ url('remove_redis', app_name=app) }}"
-              method="post">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-primary">Remove Redis db</button>
-        </form>
-    {% else %}
-        <form class="form-inline"
-              action="{{ url('create_redis', app_name=app) }}"
-              method="post">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-primary">Create Redis db</button>
-        </form>
-    {% endif %}
+    <div class="row g-3">
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <i class="bi bi-database"></i> PostgreSQL
+                </div>
+                <div class="card-body">
+                    {% if postgres %}
+                        <div class="mb-3">
+                            <span class="status-badge status-active">
+                                <i class="bi bi-check-circle"></i> Active
+                            </span>
+                            <div class="mt-3">
+                                <strong>Status:</strong> {{ postgres['Status'] }}
+                            </div>
+                        </div>
+                        <form action="{{ url('remove_postgres', app_name=app) }}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-danger">
+                                <i class="bi bi-trash"></i> Remove PostgreSQL
+                            </button>
+                        </form>
+                    {% else %}
+                        <p class="text-muted mb-3">PostgreSQL database not configured.</p>
+                        <form action="{{ url('create_postgres', app_name=app) }}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-plus-circle"></i> Create PostgreSQL Database
+                            </button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <i class="bi bi-database"></i> Redis
+                </div>
+                <div class="card-body">
+                    {% if redis %}
+                        <div class="mb-3">
+                            <span class="status-badge status-active">
+                                <i class="bi bi-check-circle"></i> Active
+                            </span>
+                            <div class="mt-3">
+                                <strong>Status:</strong> {{ redis['Status'] }}
+                            </div>
+                        </div>
+                        <form action="{{ url('remove_redis', app_name=app) }}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-danger">
+                                <i class="bi bi-trash"></i> Remove Redis
+                            </button>
+                        </form>
+                    {% else %}
+                        <p class="text-muted mb-3">Redis database not configured.</p>
+                        <form action="{{ url('create_redis', app_name=app) }}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-plus-circle"></i> Create Redis Database
+                            </button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock tab %}

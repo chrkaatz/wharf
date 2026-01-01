@@ -1,34 +1,283 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8" />
-        <meta name="viewport"
-              content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-        <title>Wharf</title>
-        <link rel="icon" type="image/x-icon" href="{{ url("favicon") }}" />
-        <link rel="stylesheet"
-              href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css"
-              integrity="xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N"
-              crossorigin="anonymous" />
-    </head>
-    <body class="bg-light">
-        <div class="container">
-            {% if messages %}
-                {% for message in messages %}
-                    <div {% if message.tags %}class="alert alert-{{ message.tags }}" role="alert"{% endif %}>{{ message }}</div>
-                {% endfor %}
-            {% endif %}
-            {% block body %}
-            {% endblock body %}
-            <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
-                    integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
-                    crossorigin="anonymous"></script>
-            <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.3/dist/umd/popper.min.js"
-                    integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
-                    crossorigin="anonymous"></script>
-            <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"
-                    integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct"
-                    crossorigin="anonymous"></script>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <title>Wharf</title>
+    <link rel="icon" type="image/x-icon" href="{{ url("favicon") }}" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
+    />
+    <style>
+      :root {
+        --wharf-primary: #6762df;
+        --wharf-primary-dark: #4f4ab8;
+        --wharf-bg: #f7f7f7;
+        --wharf-card-bg: #ffffff;
+        --wharf-border: #e0e0e0;
+        --wharf-text: #2c3e50;
+        --wharf-text-light: #6c757d;
+      }
+
+      body {
+        background-color: var(--wharf-bg);
+        color: var(--wharf-text);
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+          'Helvetica Neue', Arial, sans-serif;
+      }
+
+      .navbar {
+        background-color: var(--wharf-card-bg);
+        border-bottom: 1px solid var(--wharf-border);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      }
+
+      .navbar-brand {
+        font-weight: 600;
+        font-size: 1.5rem;
+        color: var(--wharf-primary) !important;
+      }
+
+      .main-content {
+        padding-top: 2rem;
+        padding-bottom: 3rem;
+      }
+
+      .card {
+        border: 1px solid var(--wharf-border);
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        margin-bottom: 1.5rem;
+      }
+
+      .card-header {
+        background-color: var(--wharf-card-bg);
+        border-bottom: 1px solid var(--wharf-border);
+        font-weight: 600;
+        padding: 1rem 1.5rem;
+      }
+
+      .card-body {
+        padding: 1.5rem;
+      }
+
+      .btn-primary {
+        background-color: var(--wharf-primary);
+        border-color: var(--wharf-primary);
+      }
+
+      .btn-primary:hover {
+        background-color: var(--wharf-primary-dark);
+        border-color: var(--wharf-primary-dark);
+      }
+
+      .app-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+        cursor: pointer;
+      }
+
+      .app-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+
+      .app-card a {
+        text-decoration: none;
+        color: inherit;
+      }
+
+      .app-card-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--wharf-primary);
+        margin: 0;
+      }
+
+      .config-item {
+        padding: 0.75rem;
+        border-bottom: 1px solid var(--wharf-border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .config-item:last-child {
+        border-bottom: none;
+      }
+
+      .config-key {
+        font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        font-size: 0.9rem;
+        color: var(--wharf-text);
+        font-weight: 500;
+      }
+
+      .config-value {
+        font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        font-size: 0.9rem;
+        color: var(--wharf-text-light);
+      }
+
+      .section-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        color: var(--wharf-text);
+      }
+
+      .form-section {
+        margin-top: 2rem;
+      }
+
+      .status-badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+        font-size: 0.875rem;
+        font-weight: 500;
+      }
+
+      .status-active {
+        background-color: #d4edda;
+        color: #155724;
+      }
+
+      .status-inactive {
+        background-color: #f8d7da;
+        color: #721c24;
+      }
+
+      .nav-tabs {
+        border-bottom: 2px solid var(--wharf-border);
+      }
+
+      .nav-tabs .nav-link {
+        color: var(--wharf-text-light);
+        border: none;
+        border-bottom: 2px solid transparent;
+        padding: 0.75rem 1.5rem;
+      }
+
+      .nav-tabs .nav-link:hover {
+        border-bottom-color: var(--wharf-border);
+        color: var(--wharf-text);
+      }
+
+      .nav-tabs .nav-link.active {
+        color: var(--wharf-primary);
+        border-bottom-color: var(--wharf-primary);
+        background-color: transparent;
+        font-weight: 600;
+      }
+
+      pre {
+        background-color: #f8f9fa;
+        border: 1px solid var(--wharf-border);
+        border-radius: 4px;
+        padding: 1rem;
+        font-size: 0.875rem;
+        overflow-x: auto;
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: var(--wharf-text-light);
+      }
+
+      .empty-state i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.3;
+      }
+
+      input[type='text'],
+      input[type='password'],
+      input[type='email'],
+      input[type='url'],
+      textarea,
+      select {
+        width: 100%;
+        padding: 0.375rem 0.75rem;
+        font-size: 1rem;
+        font-weight: 400;
+        line-height: 1.5;
+        color: var(--wharf-text);
+        background-color: #fff;
+        background-clip: padding-box;
+        border: 1px solid #ced4da;
+        border-radius: 0.375rem;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+      }
+
+      input[type='text']:focus,
+      input[type='password']:focus,
+      input[type='email']:focus,
+      input[type='url']:focus,
+      textarea:focus,
+      select:focus {
+        color: var(--wharf-text);
+        background-color: #fff;
+        border-color: #86b7fe;
+        outline: 0;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-light">
+      <div class="container">
+        <a class="navbar-brand" href="{{ url('index') }}">
+          <i class="bi bi-box-seam"></i> Wharf
+        </a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url('index') }}">
+                <i class="bi bi-grid"></i> Apps
+              </a>
+            </li>
+          </ul>
         </div>
-    </body>
+      </div>
+    </nav>
+    <div class="container main-content">
+      {% if messages %} {% for message in messages %}
+      <div
+        class="alert alert-{{ message.tags }} alert-dismissible fade show"
+        role="alert"
+      >
+        {{ message }}
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="alert"
+        ></button>
+      </div>
+      {% endfor %} {% endif %} {% block body %} {% endblock body %}
+    </div>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-BBtl+eGJRgqQAUMxJ7pMwbEyER4l1g+O15P+16Ep7Q9Q+zqX6gSbd85u4mG4QzX+"
+      crossorigin="anonymous"
+    ></script>
+  </body>
 </html>

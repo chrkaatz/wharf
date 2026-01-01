@@ -1,32 +1,66 @@
 {% extends "base.html" %}
 {% block body %}
-    <h1>
-        Wharf:
-        {% if running %}
-            running task
-        {% else %}
-            task log
-        {% endif %}
-        {% if app != "_" %}for <a href="{{ url('app_info', app_name=app) }}">{{ app }}</a>{% endif %}
-    </h1>
-    <h2>{{ description }}</h2>
-    Task id: {{ task_id }}
-    <br />
-    Task state: {{ state }}
-    <br />
-    <pre>
-{{ log }}
-</pre>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="section-title mb-1">
+                {% if running %}
+                    <i class="bi bi-hourglass-split"></i> Running Task
+                {% else %}
+                    <i class="bi bi-file-text"></i> Task Log
+                {% endif %}
+            </h1>
+            {% if app != "_" %}
+                <a href="{{ url('app_info', app_name=app) }}" class="text-decoration-none">
+                    <i class="bi bi-arrow-left"></i> Back to {{ app }}
+                </a>
+            {% else %}
+                <a href="{{ url("index") }}" class="text-decoration-none">
+                    <i class="bi bi-arrow-left"></i> Back to Apps
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <i class="bi bi-info-circle"></i> Task Information
+        </div>
+        <div class="card-body">
+            <div class="mb-3">
+                <strong>Description:</strong> {{ description }}
+            </div>
+            <div class="mb-3">
+                <strong>Task ID:</strong> <code>{{ task_id }}</code>
+            </div>
+            <div>
+                <strong>Status:</strong>
+                {% if running %}
+                    <span class="status-badge status-active">
+                        <i class="bi bi-arrow-repeat"></i> Running
+                    </span>
+                {% else %}
+                    <span class="status-badge {% if state == 'SUCCESS' %}status-active{% else %}status-inactive{% endif %}">
+                        {{ state }}
+                    </span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <i class="bi bi-terminal"></i> Output
+        </div>
+        <div class="card-body">
+            <pre>{{ log }}</pre>
+        </div>
+    </div>
+
     {% if running %}
         <script type="text/javascript">
-    setTimeout(function(){
-      location.reload()
-    },2000)
+            setTimeout(function(){
+                location.reload()
+            }, 2000)
         </script>
-    {% endif %}
-    {% if app == "_" %}
-        <a href="{{ url("index") }}">Return to apps index</a>
-    {% else %}
-        <a href="{{ url('app_info', app_name=app) }}">Return to {{ app }} info</a>
     {% endif %}
 {% endblock body %}
