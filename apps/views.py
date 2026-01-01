@@ -381,13 +381,47 @@ def db_info(cache_key: str):
 
 
 def postgres_info(app_name: str):
+    # First check for linked postgres services
+    try:
+        links_data = run_cmd_with_cache("postgres:app-links %s" % app_name)
+        links = [link.strip() for link in links_data.strip().split("\n") if link.strip()]
+        if links:
+            # Get info for the first linked service
+            service_name = links[0]
+            cache_key = "postgres:info %s" % service_name
+            return db_info(cache_key)
+    except:
+        # If app-links fails, fall through to check for service with app name
+        pass
+
+    # Fallback: check for postgres service with same name as app
     cache_key = "postgres:info %s" % app_name
-    return db_info(cache_key)
+    try:
+        return db_info(cache_key)
+    except:
+        return None
 
 
 def redis_info(app_name: str):
+    # First check for linked redis services
+    try:
+        links_data = run_cmd_with_cache("redis:app-links %s" % app_name)
+        links = [link.strip() for link in links_data.strip().split("\n") if link.strip()]
+        if links:
+            # Get info for the first linked service
+            service_name = links[0]
+            cache_key = "redis:info %s" % service_name
+            return db_info(cache_key)
+    except:
+        # If app-links fails, fall through to check for service with app name
+        pass
+
+    # Fallback: check for redis service with same name as app
     cache_key = "redis:info %s" % app_name
-    return db_info(cache_key)
+    try:
+        return db_info(cache_key)
+    except:
+        return None
 
 
 def letsencrypt_command():
@@ -630,12 +664,23 @@ def create_postgres(request: HttpRequest, app_name):
 
 
 def remove_postgres(request: HttpRequest, app_name):
+    # Get the linked postgres service name
+    try:
+        links_data = run_cmd_with_cache("postgres:app-links %s" % app_name)
+        links = [link.strip() for link in links_data.strip().split("\n") if link.strip()]
+        if links:
+            service_name = links[0]
+        else:
+            service_name = app_name
+    except:
+        service_name = app_name
+
     return run_cmd_with_log(
         app_name,
         "Remove Postgres",
         [
-            "postgres:unlink %s %s" % (app_name, app_name),
-            "postgres:destroy %s --force" % app_name,
+            "postgres:unlink %s %s" % (app_name, service_name),
+            "postgres:destroy %s --force" % service_name,
         ],
         "check_remove_postgres",
     )
@@ -651,12 +696,23 @@ def create_redis(request: HttpRequest, app_name):
 
 
 def remove_redis(request: HttpRequest, app_name):
+    # Get the linked redis service name
+    try:
+        links_data = run_cmd_with_cache("redis:app-links %s" % app_name)
+        links = [link.strip() for link in links_data.strip().split("\n") if link.strip()]
+        if links:
+            service_name = links[0]
+        else:
+            service_name = app_name
+    except:
+        service_name = app_name
+
     return run_cmd_with_log(
         app_name,
         "Remove Redis",
         [
-            "redis:unlink %s %s" % (app_name, app_name),
-            "redis:destroy %s --force" % app_name,
+            "redis:unlink %s %s" % (app_name, service_name),
+            "redis:destroy %s --force" % service_name,
         ],
         "check_remove_redis",
     )
@@ -685,6 +741,7 @@ def check_postgres(request: HttpRequest, app_name, task_id: str):
         raise Exception(data)
     messages.success(request, "Postgres added to %s" % app_name)
     clear_cache("postgres:info %s" % app_name)
+    clear_cache("postgres:app-links %s" % app_name)
     clear_cache("config:show %s" % app_name)
     return redirect_reverse("app_info", args=[app_name])
 
@@ -692,10 +749,12 @@ def check_postgres(request: HttpRequest, app_name, task_id: str):
 def check_remove_postgres(request: HttpRequest, app_name, task_id: str):
     res = AsyncResult(task_id)
     data = get_log(res)
-    if data.find("Postgres container deleted: %s" % app_name) == -1:
+    # The service name might be different from app_name, so check for any deletion
+    if data.find("Postgres container deleted:") == -1:
         raise Exception(data)
     messages.success(request, "Postgres removed from %s" % app_name)
     clear_cache("postgres:info %s" % app_name)
+    clear_cache("postgres:app-links %s" % app_name)
     clear_cache("config:show %s" % app_name)
     return redirect_reverse("app_info", args=[app_name])
 
@@ -707,6 +766,7 @@ def check_redis(request: HttpRequest, app_name, task_id: str):
         raise Exception(data)
     messages.success(request, "Redis added to %s" % app_name)
     clear_cache("redis:info %s" % app_name)
+    clear_cache("redis:app-links %s" % app_name)
     clear_cache("config:show %s" % app_name)
     return redirect_reverse("app_info", args=[app_name])
 
@@ -714,10 +774,12 @@ def check_redis(request: HttpRequest, app_name, task_id: str):
 def check_remove_redis(request: HttpRequest, app_name, task_id: str):
     res = AsyncResult(task_id)
     data = get_log(res)
-    if data.find("Redis container deleted: %s" % app_name) == -1:
+    # The service name might be different from app_name, so check for any deletion
+    if data.find("Redis container deleted:") == -1:
         raise Exception(data)
     messages.success(request, "Redis removed from %s" % app_name)
     clear_cache("redis:info %s" % app_name)
+    clear_cache("redis:app-links %s" % app_name)
     clear_cache("config:show %s" % app_name)
     return redirect_reverse("app_info", args=[app_name])
 
